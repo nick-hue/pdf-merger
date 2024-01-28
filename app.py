@@ -8,7 +8,7 @@ from PIL import Image
 # FONTS
 PDF_FONT_BOLD = ("Opens Sans", 18, 'bold')
 DIRECTORY_ENTRY_FONT_BOLD = ("Opens Sans", 20, 'bold')
-TITLE_FONT_BOLD = ("Opens Sans", 26, 'bold')
+TITLE_FONT_BOLD = ("Opens Sans", 30, 'bold')
 
 # COLOR 
 TITLE_BACKGROUND_COLOR = "#69696b"
@@ -67,6 +67,8 @@ class App(ctk.CTk):
 
     def add_pdf(self):
         dir = filedialog.askopenfilename()
+        if dir == "":
+           return
         current_pdf = dir.split("/")[-1]
         print(current_pdf)
         print(f"pdf number: {self.number_of_pdfs}")
@@ -75,7 +77,7 @@ class App(ctk.CTk):
         ctk.CTkButton(self.pdfs_frame, text="", image=UP_ARROW_IMAGE, hover_color=BUTTON_HOVER_COLOR, fg_color='transparent', width=15).grid(row=self.number_of_pdfs*2, column=0)
         ctk.CTkButton(self.pdfs_frame, text="", image=DOWN_ARROW_IMAGE, hover_color=BUTTON_HOVER_COLOR, fg_color='transparent', width=15).grid(row=(self.number_of_pdfs*2)+1, column=0)
 
-        ctk.CTkButton(self.pdfs_frame, text=current_pdf, text_color='white', font=PDF_FONT_BOLD, fg_color=PDF_COLOR, width=275, height=40, state=DISABLED, command=self.move_pdf).grid(row=self.number_of_pdfs*2, column=1, rowspan=2, padx=5, pady=3)
+        ctk.CTkButton(self.pdfs_frame, text=current_pdf, text_color='white', font=PDF_FONT_BOLD, hover=False, fg_color=PDF_COLOR, width=275, height=40, command=self.move_pdf).grid(row=self.number_of_pdfs*2, column=1, rowspan=2, padx=5, pady=3)
         ctk.CTkButton(self.pdfs_frame, text="-", font=TITLE_FONT_BOLD, width=40, height=40, hover_color=BUTTON_HOVER_COLOR, fg_color=BUTTON_COLOR, command=self.remove_pdf).grid(row=self.number_of_pdfs*2, column=2, rowspan=2,padx=5, pady=3)
         self.add_pdf_button.grid(row=(self.number_of_pdfs+1)*2,column=0, padx=5, pady=2)
 
@@ -91,10 +93,10 @@ class App(ctk.CTk):
 
     def display_pdfs(self):
         for idx, pdf in enumerate(self.pdfs):
-            ctk.CTkButton(self.pdfs_frame, text="", image=UP_ARROW_IMAGE, hover_color=BUTTON_HOVER_COLOR, fg_color='transparent', width=15).grid(row=idx*2, column=0)
-            ctk.CTkButton(self.pdfs_frame, text="", image=DOWN_ARROW_IMAGE, hover_color=BUTTON_HOVER_COLOR, fg_color='transparent', width=15).grid(row=(idx*2)+1, column=0)
+            ctk.CTkButton(self.pdfs_frame, text="", image=UP_ARROW_IMAGE, hover_color=BUTTON_HOVER_COLOR, fg_color='transparent', width=15, command=self.move_pdf).grid(row=idx*2, column=0)
+            ctk.CTkButton(self.pdfs_frame, text="", image=DOWN_ARROW_IMAGE, hover_color=BUTTON_HOVER_COLOR, fg_color='transparent', width=15, command=self.move_pdf).grid(row=(idx*2)+1, column=0)
 
-            ctk.CTkButton(self.pdfs_frame, text=pdf, text_color='white', font=PDF_FONT_BOLD, fg_color=PDF_COLOR, width=275, height=40, state=DISABLED, command=self.move_pdf).grid(row=idx*2, column=1, rowspan=2, padx=5, pady=3)
+            ctk.CTkButton(self.pdfs_frame, text=pdf, text_color='white', font=PDF_FONT_BOLD, hover=False, fg_color=PDF_COLOR, width=275, height=40).grid(row=idx*2, column=1, rowspan=2, padx=5, pady=3)
             ctk.CTkButton(self.pdfs_frame, text="-", font=TITLE_FONT_BOLD, width=40, height=40, hover_color=BUTTON_HOVER_COLOR, fg_color=BUTTON_COLOR, command=self.remove_pdf).grid(row=idx*2, column=2, rowspan=2, padx=5, pady=3)
             self.add_pdf_button.grid(row=(idx+1)*2,column=0, padx=5, pady=2)
 
