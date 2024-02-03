@@ -35,6 +35,5 @@ Ensure these packages are installed to run the application correctly.
 
 
 ## Structure of the Application
-Explain the structure of your application. For instance:
-- `app.py`: The main entry point of the application.
+- `app.py`: The main entry point of the application, that launches and handles all the GUI.
 - `controller.py`: Contains the logic for handling user interactions.
