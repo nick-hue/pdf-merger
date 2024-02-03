@@ -28,7 +28,8 @@ class App(ctk.CTk):
         self.title("PDF Merger")
         self.geometry("400x650")
         self.resizable(False, False)
-        
+        self.bind('<Return>', self.merge)
+
         self.grid_rowconfigure((0,1,2), weight=1)
 
         self.pdfs=[]
@@ -65,57 +66,101 @@ class App(ctk.CTk):
         self.merge_button = ctk.CTkButton(self.submit_frame, text="Merge", height=50, fg_color=BUTTON_COLOR, font=TITLE_FONT_BOLD, hover_color=BUTTON_HOVER_COLOR, command=self.merge)
         self.merge_button.grid(row=1, column=0, padx=5, pady=5)
 
+        self.info_label = ctk.CTkLabel(self.submit_frame, text="", text_color='red', font=DIRECTORY_ENTRY_FONT_BOLD)
+        self.info_label.grid(row=2, column=0, padx=5, pady=5)
+
+
     def add_pdf(self):
-        dir = filedialog.askopenfilename()
+        dir = filedialog.askopenfilename(filetypes = [('PDF files',"*.pdf")])
         if dir == "":
            return
         current_pdf = dir.split("/")[-1]
         print(current_pdf)
         print(f"pdf number: {self.number_of_pdfs}")
-        self.pdfs.append(current_pdf)
-        
-        ctk.CTkButton(self.pdfs_frame, text="", image=UP_ARROW_IMAGE, hover_color=BUTTON_HOVER_COLOR, fg_color='transparent', width=15, command=lambda dir='up', pdf=current_pdf: self.move_pdf(pdf,dir,self.number_of_pdfs)).grid(row=self.number_of_pdfs*2, column=0)    
-        ctk.CTkButton(self.pdfs_frame, text="", image=DOWN_ARROW_IMAGE, hover_color=BUTTON_HOVER_COLOR, fg_color='transparent', width=15, command=lambda dir='down', pdf=current_pdf: self.move_pdf(pdf,dir,self.number_of_pdfs)).grid(row=(self.number_of_pdfs*2)+1, column=0)
 
-        ctk.CTkButton(self.pdfs_frame, text=current_pdf, text_color='white', font=PDF_FONT_BOLD, hover=False, fg_color=PDF_COLOR, width=275, height=40).grid(row=self.number_of_pdfs*2, column=1, rowspan=2, padx=5, pady=3)
-        ctk.CTkButton(self.pdfs_frame, text="-", font=TITLE_FONT_BOLD, width=40, height=40, hover_color=BUTTON_HOVER_COLOR, fg_color=BUTTON_COLOR, command=self.remove_pdf).grid(row=self.number_of_pdfs*2, column=2, rowspan=2, padx=5, pady=3)
+        up_button = ctk.CTkButton(self.pdfs_frame, text="", image=UP_ARROW_IMAGE, hover_color=BUTTON_HOVER_COLOR, fg_color='transparent', width=15, command=lambda dir='up', pdf=current_pdf, num=self.number_of_pdfs: self.move_pdf(pdf,dir,num))
+        up_button.grid(row=self.number_of_pdfs*2, column=0)    
+        down_button = ctk.CTkButton(self.pdfs_frame, text="", image=DOWN_ARROW_IMAGE, hover_color=BUTTON_HOVER_COLOR, fg_color='transparent', width=15, command=lambda dir='down', pdf=current_pdf, num=self.number_of_pdfs: self.move_pdf(pdf,dir,num))
+        down_button.grid(row=(self.number_of_pdfs*2)+1, column=0)
+
+        pdf_display = ctk.CTkButton(self.pdfs_frame, text=current_pdf, text_color='white', font=PDF_FONT_BOLD, hover=False, fg_color=PDF_COLOR, width=275, height=40)
+        pdf_display.grid(row=self.number_of_pdfs*2, column=1, rowspan=2, padx=5, pady=3)
+        remove_button = ctk.CTkButton(self.pdfs_frame, text="-", font=TITLE_FONT_BOLD, width=40, height=40, hover_color=BUTTON_HOVER_COLOR, fg_color=BUTTON_COLOR, command=lambda idx=self.number_of_pdfs: self.remove_pdf(idx))
+        remove_button.grid(row=self.number_of_pdfs*2, column=2, rowspan=2, padx=5, pady=3)
+        
         self.add_pdf_button.grid(row=(self.number_of_pdfs+1)*2,column=0, padx=5, pady=2)
 
+        info = {
+            'index':self.number_of_pdfs,
+            'name':current_pdf,
+            'up_button':up_button,
+            'down_button':down_button,
+            'display':pdf_display,
+            'remove_button':remove_button
+        }
+
+        self.pdfs.append(info)
         self.number_of_pdfs+=1
 
-    def remove_pdf(self):
-        self.clear_frame(self.pdfs_frame)
-        self.display_pdfs()
+    def remove_pdf(self, index):
+        del self.pdfs[index]
         self.number_of_pdfs-=1
+        self.display_pdfs()
 
     def display_pdfs(self):
         self.clear_frame(self.pdfs_frame)
 
         for idx, pdf in enumerate(self.pdfs):
-            # make a dictionary with the pdfs info 
-            print(f'index {idx}')
-            ctk.CTkButton(self.pdfs_frame, text="", image=UP_ARROW_IMAGE, hover_color=BUTTON_HOVER_COLOR, fg_color='transparent', width=15, command=lambda dir='up', pdf=pdf, idx=idx: self.move_pdf(pdf,dir,idx)).grid(row=idx*2, column=0)
-            ctk.CTkButton(self.pdfs_frame, text="", image=DOWN_ARROW_IMAGE, hover_color=BUTTON_HOVER_COLOR, fg_color='transparent', width=15, command=lambda dir='down', pdf=pdf, idx=idx: self.move_pdf(pdf,dir,idx)).grid(row=(idx*2)+1, column=0)
+            pdf['up_button'].grid(row=idx*2, column=0)
+            pdf['up_button'].configure(command=lambda dir='up', pdf=pdf['name'], num=idx: self.move_pdf(pdf,dir,num))
+            pdf['down_button'].grid(row=idx*2+1, column=0)
+            pdf['down_button'].configure(command=lambda dir='down', pdf=pdf['name'], num=idx: self.move_pdf(pdf,dir,num))
+            
+            pdf['display'].grid(row=idx*2, column=1, rowspan=2, padx=5, pady=3)
+            
+            pdf['remove_button'].grid(row=idx*2, column=2, rowspan=2, padx=5, pady=3)
+            pdf['remove_button'].configure(command=lambda idx=idx : self.remove_pdf(idx))
 
-            ctk.CTkButton(self.pdfs_frame, text=pdf, text_color='white', font=PDF_FONT_BOLD, hover=False, fg_color=PDF_COLOR, width=275, height=40).grid(row=idx*2, column=1, rowspan=2, padx=5, pady=3)
-            ctk.CTkButton(self.pdfs_frame, text="-", font=TITLE_FONT_BOLD, width=40, height=40, hover_color=BUTTON_HOVER_COLOR, fg_color=BUTTON_COLOR, command=self.remove_pdf).grid(row=idx*2, column=2, rowspan=2, padx=5, pady=3)
-            self.add_pdf_button.grid(row=(idx+1)*2,column=0, padx=5, pady=2)
+        self.add_pdf_button.grid(row=(self.number_of_pdfs+1)*2,column=0, padx=5, pady=2)
 
     def move_pdf(self, pdf, dir, index):
         print(f"Moving pdf: {pdf} {dir}. -- pdf is at index {index}")
+        self.swap_pdfs(dir, index)
+        self.display_pdfs()
         
-    def merge(self):
-        # check if name ends in .pdf
-        print(self.pdfs)
+    def merge(self, *args):
+        self.info_label.configure(text="")
+        print(len(self.entry_variable.get()))
+        
+        if not self.entry_variable.get().endswith(".pdf") or len(self.entry_variable.get()) < 5:
+            print("ERROR")
+            self.info_label.configure(text="Error with filename.")
+            return
+        for pdf in self.pdfs:
+            print(pdf['name'])
+        
         controller.merge_pdfs(pdfs=self.pdfs, pdf_name=self.entry_variable.get())
+        self.info_label.configure(text='PDF files successfully merged.', text_color='green')
 
     def clear_frame(self, frame):
         for widgets in frame.winfo_children():
-            widgets.destroy()
+            widgets.grid_forget()
 
-    def swap_pdfs(self, dir, pdf_name, index):
-        a, b = self.pdfs.index('password2'), self.pdfs.index('password1')
-        self.pdfs[b], self.pdfs[a] = self.pdfs[a], self.pdfs[b]
+    def swap_pdfs(self, dir, index):
+        if dir == 'up':
+            swap_index = index-1
+            if swap_index < 0:
+                print("Index out of bounds")
+                return
+        elif dir == 'down':
+            swap_index = index+1
+            if swap_index > self.number_of_pdfs - 1:
+                print("Index out of bounds")
+                return
+        else:
+            print('ERROR: Bad direction')
+
+        self.pdfs[swap_index], self.pdfs[index] = self.pdfs[index], self.pdfs[swap_index]
 
 
 if __name__ == "__main__":
